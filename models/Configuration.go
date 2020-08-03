@@ -13,6 +13,6 @@ type Configuration struct {
 	} `yaml:"mqtt"`
 	Webserver struct {
 		Address string `yaml:"address"`
-		Port    string `yaml:"port"`
+		Port    int    `yaml:"port"`
 	} `yaml:"webserver"`
 }
