@@ -1,74 +1,104 @@
-package mqtt
+package mqttClient
 
 import (
 	"crypto/tls"
 	"fmt"
-	"math/rand"
-
 	MQTT "github.com/eclipse/paho.mqtt.golang"
-	"k8s.io/klog"
+	"math/rand"
+	"time"
 )
 
-// Mqtt representing the mqtt connection
-type Mqtt struct {
-	client      MQTT.Client
-	receiveChan chan<- Message
-	sendChan    <-chan Message
+type MqttWrapper struct {
+	clientID         string
+	client           MQTT.Client
+	subscribedTopics []string
+	Verbose          bool
+	recMsg           chan MQTT.Message
 }
 
-// Message is the struct which representing the current message
-type Message struct {
-	Topic   string
-	Payload []byte
+type Msg struct {
+	Topic string
+	Msg   []byte
 }
 
-func Connect(receiveChan chan<- Message, sendChan <-chan Message, clientID string, server string, username string, password string, topic string) (Mqtt, error) {
-	var tlsConfig *tls.Config
-	tlsConfig = &tls.Config{InsecureSkipVerify: true, ClientAuth: tls.NoClientCert}
-	opts := MQTT.NewClientOptions().AddBroker(server).SetClientID(fmt.Sprintf("%s-%d", clientID, rand.Int31())).SetCleanSession(true)
-	opts.SetAutoReconnect(true)
-	if username != "" {
-		klog.Infof("found username: %s", username)
-		opts.SetUsername(username)
+var defaultPublishHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
+	//implements what happens with received messages subscribed to before
+	fmt.Printf("Rec at DefaultHandler: TOPIC: %s\n", msg.Topic(), msg.Topic())
+}
+
+func (m *MqttWrapper) Init(username, password, host string, port int, tls bool) error {
+	mq := *m
+	rand.Seed(time.Now().UnixNano())
+	mq.clientID = fmt.Sprintf("connector-%d", rand.Int31())
+	err := m.connect(host, m.clientID, username, password, port, tls)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MqttWrapper) connect(host, deviceId, user, password string, port int, tlsVerify bool) error {
+
+	clientOpts := MQTT.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", host, port)).SetClientID(deviceId).SetCleanSession(true)
+	//clientOpts.SetDefaultPublishHandler(defaultPublishHandler)
+
+	if user != "" {
+		clientOpts.SetUsername(user)
 		if password != "" {
-			opts.SetPassword(password)
+			clientOpts.SetPassword(password)
 		}
 	}
 
-	opts.SetTLSConfig(tlsConfig)
-	client := MQTT.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		return Mqtt{}, token.Error()
+	if tlsVerify {
+		tlsConfig := &tls.Config{ClientAuth: tls.NoClientCert}
+		clientOpts.SetTLSConfig(tlsConfig)
+	} else {
+		tlsConfig := &tls.Config{InsecureSkipVerify: true, ClientAuth: tls.NoClientCert}
+		clientOpts.SetTLSConfig(tlsConfig)
 	}
 
-	mqtt := Mqtt{
-		receiveChan: receiveChan,
-		sendChan:    sendChan,
-		client:      client,
+	m.client = MQTT.NewClient(clientOpts)
+
+	if tokenClient := m.client.Connect(); tokenClient.Wait() && tokenClient.Error() != nil {
+		return tokenClient.Error()
 	}
 
-	return mqtt, nil
+	return nil
 }
 
-func (m Mqtt) send() {
-	for {
-		msg := <-m.sendChan
-		token := m.client.Publish(msg.Topic, 1, false, msg.Payload)
-		if token.Wait() && token.Error() != nil {
-			klog.Errorf("could not send message; mqtt error: %s\n", token.Error())
+func (m *MqttWrapper) Disconnect(host, deviceId, user, password string, port int, tlsVerify bool) error {
+	for _, topic := range m.subscribedTopics {
+		if token := m.client.Unsubscribe(topic); token.Wait() && token.Error() != nil {
+			fmt.Println(token.Error())
+			return token.Error()
 		}
 	}
+	m.client.Disconnect(250)
+	return nil
 }
 
-func (m Mqtt) handle(client MQTT.Client, msg MQTT.Message) {
-	klog.Infof("handle incomming request of topic: %s", msg.Topic())
-	message := Message{Topic: msg.Topic(), Payload: msg.Payload()}
-	m.receiveChan <- message
+func (m *MqttWrapper) Subscribe(topic string, callBack MQTT.MessageHandler) error {
+	if token := m.client.Subscribe(topic, 2, callBack); token.Wait() && token.Error() != nil {
+		fmt.Println(token.Error())
+		return token.Error()
+	}
+	m.subscribedTopics = append(m.subscribedTopics, topic)
+
+	if m.Verbose == true {
+		fmt.Printf("Subscribed to topic %s \n", topic)
+	}
+	return nil
 }
 
-func (m Mqtt) receive(topic string) {
-	token := m.client.Subscribe(topic, 1, m.handle)
+func (m *MqttWrapper) Publish(topic string, msg []byte) error {
+	token := m.client.Publish(topic, 2, false, msg)
 	if token.Wait() && token.Error() != nil {
-		klog.Errorf("Error by receiving message. MQTT error: %s\n", token.Error())
+		return token.Error()
 	}
+
+	if m.Verbose == true {
+		fmt.Printf("Pub: TOPIC %s MSG: %s \n", topic, msg)
+	}
+
+	return nil
 }
