@@ -12,7 +12,9 @@ import (
 	"os"
 
 	"gitlab.inovex.de/proj-kosmos/intern-mqtt-db/config"
+	"gitlab.inovex.de/proj-kosmos/intern-mqtt-db/logic"
 	"gitlab.inovex.de/proj-kosmos/intern-mqtt-db/models"
+	mq "gitlab.inovex.de/proj-kosmos/intern-mqtt-db/mqtt"
 )
 
 var cli struct {
@@ -52,4 +54,10 @@ func main() {
 	if err != nil {
 		klog.Errorf("could not connect to database: %s\n", err)
 	}
+
+	sendChan := make(chan logic.MessageBase, 100)
+
+	mqtt := mq.MqttWrapper{}
+	mqtt.Init(pas.Mqtt.User, pas.Mqtt.Password, conf.Mqtt.Address, conf.Mqtt.Port, conf.Mqtt.Tls)
+	logic.InitSensorUpdate(db, &mqtt, sendChan)
 }

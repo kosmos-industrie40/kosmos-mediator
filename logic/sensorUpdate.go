@@ -9,24 +9,27 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"k8s.io/klog"
 
-	"gitlab.inovex.de/proj-kosmos/mqtt-database/models"
-	"gitlab.inovex.de/proj-kosmos/mqtt-database/mqtt"
+	"gitlab.inovex.de/proj-kosmos/intern-mqtt-db/models"
+	mqttClient "gitlab.inovex.de/proj-kosmos/intern-mqtt-db/mqtt"
 )
 
+var topic string = "kosmos/machine-data/+/sensor/+/update" // mqtt topic
+var regex string = "kosmos/machine-data/*/sensor/*/update" // regex (has to be updated TODO)
+
 type SensorUpdate struct {
-	db    *sql.DB
-	mqtt  *mqtt.MqttWrapper
-	regex *regexp.Regexp
+	db       *sql.DB
+	mqtt     *mqttClient.MqttWrapper
+	regex    *regexp.Regexp
+	sendChan chan<- MessageBase
 }
 
-func Init(db *sql.DB, mqtt *mqtt.MqttWrapper) SensorUpdate {
-	regex := regexp.MustCompile("kosmos/machine-data/*/sensor/*/update")
-	return SensorUpdate{regex: regex, db: db, mqtt: mqtt}
+func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- MessageBase) {
+	regex := regexp.MustCompile(regex)
+	su := SensorUpdate{regex: regex, db: db, mqtt: mq, sendChan: sendChan}
+	mq.Subscribe(topic, su.sensorHandler)
 }
 
-func (su *SensorUpdate) SensorHandler(client MQTT.Client, msg MQTT.Message) {
-	//implements what happens with received messages subscribed to before
-
+func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 	klog.Infof("Rec SensorHandler: TOPIC: %s \n", msg.Topic())
 
 	var sensorData models.SensorUpdate
@@ -49,5 +52,11 @@ func (su *SensorUpdate) SensorHandler(client MQTT.Client, msg MQTT.Message) {
 	if err != nil {
 		klog.Errorf("could not insert data into db: %s\n", err)
 		return
+	}
+
+	su.sendChan <- MessageBase{
+		Machine:      machineID,
+		Sensor:       sensorID,
+		LastAnalyses: "",
 	}
 }
