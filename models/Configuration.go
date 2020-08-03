@@ -9,5 +9,10 @@ type Configuration struct {
 	Mqtt struct {
 		Address string `yaml:"address"`
 		Port    int    `yaml:"port"`
+		Tls     bool   `yaml:"tls"`
 	} `yaml:"mqtt"`
+	Webserver struct {
+		Address string `yaml:"address"`
+		Port    string `yaml:"port"`
+	} `yaml:"webserver"`
 }

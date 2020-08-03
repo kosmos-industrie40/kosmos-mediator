@@ -3,17 +3,18 @@ package mqttClient
 import (
 	"crypto/tls"
 	"fmt"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"math/rand"
+	"os"
 	"time"
+
+	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"k8s.io/klog"
 )
 
 type MqttWrapper struct {
 	clientID         string
 	client           MQTT.Client
 	subscribedTopics []string
-	Verbose          bool
-	recMsg           chan MQTT.Message
 }
 
 type Msg struct {
@@ -21,16 +22,18 @@ type Msg struct {
 	Msg   []byte
 }
 
-var defaultPublishHandler MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
-	//implements what happens with received messages subscribed to before
-	fmt.Printf("Rec at DefaultHandler: TOPIC: %s\n", msg.Topic(), msg.Topic())
-}
-
 func (m *MqttWrapper) Init(username, password, host string, port int, tls bool) error {
 	mq := *m
 	rand.Seed(time.Now().UnixNano())
-	mq.clientID = fmt.Sprintf("connector-%d", rand.Int31())
-	err := m.connect(host, m.clientID, username, password, port, tls)
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		klog.Errorf("could not query hostname; err")
+		os.Exit(1)
+	}
+
+	mq.clientID = fmt.Sprintf("%s-connector-%d", hostname, rand.Int31())
+	err = m.connect(host, m.clientID, username, password, port, tls)
 	if err != nil {
 		return err
 	}
@@ -40,7 +43,6 @@ func (m *MqttWrapper) Init(username, password, host string, port int, tls bool) 
 func (m *MqttWrapper) connect(host, deviceId, user, password string, port int, tlsVerify bool) error {
 
 	clientOpts := MQTT.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", host, port)).SetClientID(deviceId).SetCleanSession(true)
-	//clientOpts.SetDefaultPublishHandler(defaultPublishHandler)
 
 	if user != "" {
 		clientOpts.SetUsername(user)
@@ -69,7 +71,6 @@ func (m *MqttWrapper) connect(host, deviceId, user, password string, port int, t
 func (m *MqttWrapper) Disconnect(host, deviceId, user, password string, port int, tlsVerify bool) error {
 	for _, topic := range m.subscribedTopics {
 		if token := m.client.Unsubscribe(topic); token.Wait() && token.Error() != nil {
-			fmt.Println(token.Error())
 			return token.Error()
 		}
 	}
@@ -78,27 +79,22 @@ func (m *MqttWrapper) Disconnect(host, deviceId, user, password string, port int
 }
 
 func (m *MqttWrapper) Subscribe(topic string, callBack MQTT.MessageHandler) error {
-	if token := m.client.Subscribe(topic, 2, callBack); token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
+	if token := m.client.Subscribe(topic, 1, callBack); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	m.subscribedTopics = append(m.subscribedTopics, topic)
 
-	if m.Verbose == true {
-		fmt.Printf("Subscribed to topic %s \n", topic)
-	}
+	klog.InfoDepth(1, "Subscribed to topic %s \n", topic)
 	return nil
 }
 
-func (m *MqttWrapper) Publish(topic string, msg []byte) error {
-	token := m.client.Publish(topic, 2, false, msg)
+func (m *MqttWrapper) Publish(msg Msg) error {
+	token := m.client.Publish(msg.Topic, 1, false, msg.Msg)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
-	if m.Verbose == true {
-		fmt.Printf("Pub: TOPIC %s MSG: %s \n", topic, msg)
-	}
+	klog.InfoDepth(1, "Pub: TOPIC %s MSG: %s \n", msg.Topic, string(msg.Msg))
 
 	return nil
 }

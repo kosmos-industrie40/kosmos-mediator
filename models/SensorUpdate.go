@@ -16,6 +16,7 @@ type SensorUpdate struct {
 	Meta      interface{} `json:"meta:omitempty"`
 }
 
+// insert will insert a new sensur update message into the database
 func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 	result, err := db.Query("SELECT id FROM machine_sensor JOIN sensor ON sensor.id = machine_sensor.sensor WHERE sensor.transmitted_id = $1 AND machine_sensor.machine = $2", sensor, machine)
 	if err != nil {
