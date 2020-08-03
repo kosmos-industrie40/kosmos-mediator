@@ -68,10 +68,8 @@ func (m Mqtt) handle(client MQTT.Client, msg MQTT.Message) {
 }
 
 func (m Mqtt) receive(topic string) {
-	for {
-		token := m.client.Subscribe(topic, 1, m.handle)
-		if token.Wait() && token.Error() != nil {
-			klog.Errorf("Error by receiving message. MQTT error: %s\n", token.Error())
-		}
+	token := m.client.Subscribe(topic, 1, m.handle)
+	if token.Wait() && token.Error() != nil {
+		klog.Errorf("Error by receiving message. MQTT error: %s\n", token.Error())
 	}
 }
