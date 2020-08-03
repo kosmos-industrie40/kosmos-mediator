@@ -64,7 +64,6 @@ func (m Mqtt) handle(client MQTT.Client, msg MQTT.Message) {
 	klog.Infof("handle incomming request of topic: %s", msg.Topic())
 	message := Message{Topic: msg.Topic(), Payload: msg.Payload()}
 	m.receiveChan <- message
-
 }
 
 func (m Mqtt) receive(topic string) {
