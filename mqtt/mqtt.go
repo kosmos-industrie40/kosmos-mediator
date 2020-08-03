@@ -84,7 +84,7 @@ func (m *MqttWrapper) Subscribe(topic string, callBack MQTT.MessageHandler) erro
 	}
 	m.subscribedTopics = append(m.subscribedTopics, topic)
 
-	klog.InfoDepth(1, "Subscribed to topic %s \n", topic)
+	klog.InfoDepth(1, "Subscribed to topic ", topic, " \n")
 	return nil
 }
 
@@ -94,7 +94,7 @@ func (m *MqttWrapper) Publish(msg Msg) error {
 		return token.Error()
 	}
 
-	klog.InfoDepth(1, "Pub: TOPIC %s MSG: %s \n", msg.Topic, string(msg.Msg))
+	klog.InfoDepth(1, "Pub: TOPIC", msg.Topic, " MSG: ", string(msg.Msg), "\n")
 
 	return nil
 }
