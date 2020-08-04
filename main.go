@@ -47,7 +47,10 @@ func main() {
 
 	// enable monitoring
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(fmt.Sprintf("%s:%d", conf.Webserver.Address, conf.Webserver.Port), nil)
+	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", conf.Webserver.Address, conf.Webserver.Port), nil); err != nil {
+		klog.Errorf("can not start webserver; %s\n", err)
+		os.Exit(1)
+	}
 
 	conStr := fmt.Sprintf("host=%s user=%s password=%s port=%d sslmode=disable dbname=%s", conf.Database.Address, pas.Database.User, pas.Database.Password, conf.Database.Port, conf.Database.Database)
 	db, err := sql.Open("postgres", conStr)
@@ -58,6 +61,12 @@ func main() {
 	sendChan := make(chan logic.MessageBase, 100)
 
 	mqtt := mq.MqttWrapper{}
-	mqtt.Init(pas.Mqtt.User, pas.Mqtt.Password, conf.Mqtt.Address, conf.Mqtt.Port, conf.Mqtt.Tls)
-	logic.InitSensorUpdate(db, &mqtt, sendChan)
+	if err := mqtt.Init(pas.Mqtt.User, pas.Mqtt.Password, conf.Mqtt.Address, conf.Mqtt.Port, conf.Mqtt.Tls); err != nil {
+		klog.Errorf("cannot connect with mqtt brocker: %s\n", err)
+		os.Exit(1)
+	}
+	if err := logic.InitSensorUpdate(db, &mqtt, sendChan); err != nil {
+		klog.Errorf("can not subscirbe sensor update: %s\n", err)
+		os.Exit(1)
+	}
 }

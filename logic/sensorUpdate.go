@@ -23,10 +23,13 @@ type SensorUpdate struct {
 	sendChan chan<- MessageBase
 }
 
-func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- MessageBase) {
+func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- MessageBase) error {
 	regex := regexp.MustCompile(regex)
 	su := SensorUpdate{regex: regex, db: db, mqtt: mq, sendChan: sendChan}
-	mq.Subscribe(topic, su.sensorHandler)
+	if err := mq.Subscribe(topic, su.sensorHandler); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
