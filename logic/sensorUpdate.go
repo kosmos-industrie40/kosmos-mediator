@@ -53,7 +53,7 @@ func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 
 	err := sensorData.Insert(su.db, machineID, sensorID)
 	if err != nil {
-		klog.Errorf("could not insert data into db: %s\n", err)
+		klog.Errorf("could not insert sensor data into db: %s\n", err)
 		return
 	}
 

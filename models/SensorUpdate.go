@@ -18,7 +18,7 @@ type SensorUpdate struct {
 	Meta      interface{} `json:"meta"`
 }
 
-// insert will insert a new sensur update message into the database
+// insert will insert a new sensor update message into the database
 func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 	result, err := db.Query("SELECT machine_sensor.id FROM machine_sensor JOIN sensor ON sensor.id = machine_sensor.sensor WHERE sensor.transmitted_id = $1 AND machine_sensor.machine = $2", sensor, machine)
 	if err != nil {
@@ -35,7 +35,6 @@ func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 
 	// no result will be found
 	if !result.Next() {
-		//TODO error handling; we want to store all sensor data?
 		return fmt.Errorf("could not find machine-sensor combination; machine id is %s and transmitted sensor id is: %s\n", machine, sensor)
 	}
 
