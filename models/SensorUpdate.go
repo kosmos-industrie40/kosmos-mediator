@@ -41,7 +41,7 @@ func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 		return fmt.Errorf("could not parse machine-sensor.id to int64: %s\n", err)
 	}
 
-	if _, err := db.Exec("INSERT INTO update_message (sensor_machine, timestamp, meta, column, data, signature) VALUES ($1, $2, $3, $4, $5, $6)", id, s.Timestamp, s.Meta, s.Columns, s.Data, s.Signature); err != nil {
+	if _, err := db.Exec("INSERT INTO update_message (sensor_machine, timestamp, meta, attribute, data, signature) VALUES ($1, $2, $3, $4, $5, $6)", id, s.Timestamp, s.Meta, s.Columns, s.Data, s.Signature); err != nil {
 		return fmt.Errorf("could not insert update_message data: %s\n", err)
 	}
 
