@@ -45,13 +45,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// enable monitoring
-	http.Handle("/metrics", promhttp.Handler())
-	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", conf.Webserver.Address, conf.Webserver.Port), nil); err != nil {
-		klog.Errorf("can not start webserver; %s\n", err)
-		os.Exit(1)
-	}
-
 	conStr := fmt.Sprintf("host=%s user=%s password=%s port=%d sslmode=disable dbname=%s", conf.Database.Address, pas.Database.User, pas.Database.Password, conf.Database.Port, conf.Database.Database)
 	db, err := sql.Open("postgres", conStr)
 	if err != nil {
@@ -67,6 +60,13 @@ func main() {
 	}
 	if err := logic.InitSensorUpdate(db, &mqtt, sendChan); err != nil {
 		klog.Errorf("can not subscirbe sensor update: %s\n", err)
+		os.Exit(1)
+	}
+
+	// enable monitoring
+	http.Handle("/metrics", promhttp.Handler())
+	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", conf.Webserver.Address, conf.Webserver.Port), nil); err != nil {
+		klog.Errorf("can not start webserver; %s\n", err)
 		os.Exit(1)
 	}
 }
