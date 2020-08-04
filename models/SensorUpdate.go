@@ -2,7 +2,9 @@ package models
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"k8s.io/klog"
 )
@@ -18,7 +20,7 @@ type SensorUpdate struct {
 
 // insert will insert a new sensur update message into the database
 func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
-	result, err := db.Query("SELECT id FROM machine_sensor JOIN sensor ON sensor.id = machine_sensor.sensor WHERE sensor.transmitted_id = $1 AND machine_sensor.machine = $2", sensor, machine)
+	result, err := db.Query("SELECT machine_sensor.id FROM machine_sensor JOIN sensor ON sensor.id = machine_sensor.sensor WHERE sensor.transmitted_id = $1 AND machine_sensor.machine = $2", sensor, machine)
 	if err != nil {
 		return err
 	}
@@ -41,7 +43,24 @@ func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 		return fmt.Errorf("could not parse machine-sensor.id to int64: %s\n", err)
 	}
 
-	if _, err := db.Exec("INSERT INTO update_message (sensor_machine, timestamp, meta, attribute, data, signature) VALUES ($1, $2, $3, $4, $5, $6)", id, s.Timestamp, s.Meta, s.Columns, s.Data, s.Signature); err != nil {
+	meta, err := json.Marshal(s.Meta)
+	if err != nil {
+		return fmt.Errorf("could not marshal meta: %s", err)
+	}
+
+	columns, err := json.Marshal(s.Columns)
+	if err != nil {
+		return fmt.Errorf("could not marshal columns: %s", err)
+	}
+
+	data, err := json.Marshal(s.Data)
+	if err != nil {
+		return fmt.Errorf("could not marshal data: %s", err)
+	}
+
+	tm := time.Unix(s.Timestamp, 0)
+
+	if _, err := db.Exec("INSERT INTO update_message (sensor_machine, timestamp, meta, column_definition, data, signature) VALUES ($1, $2, $3, $4, $5, $6)", id, tm, meta, columns, data, s.Signature); err != nil {
 		return fmt.Errorf("could not insert update_message data: %s\n", err)
 	}
 
