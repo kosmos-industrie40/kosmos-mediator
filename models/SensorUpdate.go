@@ -15,7 +15,7 @@ type SensorUpdate struct {
 	Columns   interface{} `json:"columns"`
 	Data      interface{} `json:"data"`
 	Signature string      `json:"signature"`
-	Meta      interface{} `json:"meta:omitempty"`
+	Meta      interface{} `json:"meta"`
 }
 
 // insert will insert a new sensur update message into the database
