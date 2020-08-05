@@ -89,7 +89,7 @@ func (m *MqttWrapper) Subscribe(topic string, callBack MQTT.MessageHandler) erro
 	}
 	m.subscribedTopics = append(m.subscribedTopics, topic)
 
-	klog.V(2).Infof("Subscribed to topic %s", topic, " \n")
+	klog.V(2).Infof("Subscribed to topic %s", topic)
 	return nil
 }
 
