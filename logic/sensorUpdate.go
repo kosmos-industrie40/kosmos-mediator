@@ -14,7 +14,7 @@ import (
 )
 
 var topic string = "kosmos/machine-data/+/sensor/+/update"                       // mqtt topic
-var regex string = "kosmos/machine-data/[a-z0-9A-Z]+/sensor/[a-z0-9A-Z]+/update" // regex (has to be updated TODO)
+var regex string = "kosmos/machine-data/[a-z0-9A-Z]+/sensor/[a-z0-9A-Z]+/update" // regex
 
 type SensorUpdate struct {
 	db       *sql.DB
@@ -23,6 +23,7 @@ type SensorUpdate struct {
 	sendChan chan<- MessageBase
 }
 
+// InitInitSensorUpdate initialise the SensorUpdate
 func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- MessageBase) error {
 	regex := regexp.MustCompile(regex)
 	su := SensorUpdate{regex: regex, db: db, mqtt: mq, sendChan: sendChan}
@@ -62,4 +63,6 @@ func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 		Sensor:       sensorID,
 		LastAnalyses: "",
 	}
+
+	klog.V(2).Info("sensor update is handeld successfully")
 }
