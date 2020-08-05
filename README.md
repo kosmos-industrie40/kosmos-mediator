@@ -31,7 +31,24 @@ The following variables has to be set to you specific deployment:
 - database
 - database user
 
-## Configuration
+## Test
+To insert the used data (sensor, machine contract) into the database you can execute the following command:
+```bash
+psql -d <database> -h <host> -U <user> <test/insert.sql
+```
+
+The following script will publish the sensor update messages and analys result to the mqtt broker.
+```bash
+for x in 'test/examplePayload/sensor*'; do
+mosquitto_pub -h <host> -p <port> -t kosmos/machine-data/machine/sensor/sensor/update -f $x
+done
+
+for x in 'test/examplePayload/analyse*'; do
+mosquitto_pub -h <host> -p <port> -t kosmos/analyses/contract -f $x
+done
+```
+
+
 ## Configuration
 The configuration of the application will be made through two configuration files and command line flags. 
 The configuration parameters will be explained in the next three sections.
