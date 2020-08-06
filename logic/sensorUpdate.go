@@ -23,7 +23,8 @@ type SensorUpdate struct {
 	sendChan chan<- MessageBase
 }
 
-// InitInitSensorUpdate initialise the SensorUpdate
+// InitInitSensorUpdate initialise the SensorUpdate logic
+// subscribe to a mqtt topic and set the handler of this topic
 func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- MessageBase) error {
 	regex := regexp.MustCompile(regex)
 	su := SensorUpdate{regex: regex, db: db, mqtt: mq, sendChan: sendChan}
@@ -33,6 +34,9 @@ func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- Me
 	return nil
 }
 
+// sensorHandler is a mqtt handler comparing to https://godoc.org/github.com/eclipse/paho.mqtt.golang#MessageHandler
+// will create an SensorUpdate model and write this into the database
+// in the end the message will be published about the sendChan
 func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 	klog.Infof("Rec SensorHandler: TOPIC: %s \n", msg.Topic())
 

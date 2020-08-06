@@ -16,6 +16,7 @@ import (
 var topi string = "kosmos/analyses/+"            // mqtt topic
 var rege string = "kosmos/analyses/[0-9a-zA-Z]+" // regex
 
+// internal representation of the logic of the analytic result
 type AnalysesResult struct {
 	db       *sql.DB
 	mqtt     *mqttClient.MqttWrapper
@@ -23,7 +24,8 @@ type AnalysesResult struct {
 	sendChan chan<- MessageBase
 }
 
-// InitAnalyseResult initialise the analyse result
+// InitAnalyseResult initialise the analytic result logic
+// and subscribe to the specific topic and set the handler
 func InitAnalyseResult(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- MessageBase) error {
 	reg := regexp.MustCompile(rege)
 	ar := AnalysesResult{regex: reg, db: db, mqtt: mq, sendChan: sendChan}
@@ -33,6 +35,9 @@ func InitAnalyseResult(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- M
 	return nil
 }
 
+// handler is a mqtt handler comparing to https://godoc.org/github.com/eclipse/paho.mqtt.golang#MessageHandler
+// this function will create an AnalyseResult model and store it into the database
+// in the end the message will be published about the sendChan
 func (ar AnalysesResult) handler(client MQTT.Client, msg MQTT.Message) {
 	klog.Infof("Rec AnalyseResult handler: TOPIC: %s \n", msg.Topic())
 
