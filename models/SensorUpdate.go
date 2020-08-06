@@ -9,6 +9,7 @@ import (
 	"k8s.io/klog"
 )
 
+// SensorUpdate representing the mqtt sensor update message
 type SensorUpdate struct {
 	Schema    string      `json:"$schema,omitempty"`
 	Timestamp int64       `json:"timestamp"`
