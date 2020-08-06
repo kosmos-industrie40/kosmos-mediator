@@ -18,7 +18,7 @@ type MqttWrapper struct {
 	subscribedTopics []string
 }
 
-// Msg representing an message which can be used to publish to an MQTT broker
+// Msg representing an message which can be used to publish the message to an MQTT broker
 type Msg struct {
 	Topic string
 	Msg   []byte
