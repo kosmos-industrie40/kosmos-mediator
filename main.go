@@ -55,11 +55,16 @@ func main() {
 
 	mqtt := mq.MqttWrapper{}
 	if err := mqtt.Init(pas.Mqtt.User, pas.Mqtt.Password, conf.Mqtt.Address, conf.Mqtt.Port, conf.Mqtt.Tls); err != nil {
-		klog.Errorf("cannot connect with mqtt brocker: %s\n", err)
+		klog.Errorf("cannot connect with mqtt broker: %s\n", err)
 		os.Exit(1)
 	}
 	if err := logic.InitSensorUpdate(db, &mqtt, sendChan); err != nil {
-		klog.Errorf("can not subscirbe sensor update: %s\n", err)
+		klog.Errorf("can not subscribe sensor update: %s\n", err)
+		os.Exit(1)
+	}
+
+	if err := logic.InitAnalyseResult(db, &mqtt, sendChan); err != nil {
+		klog.Errorf("can not subscribe sensor update: %s\n", err)
 		os.Exit(1)
 	}
 
