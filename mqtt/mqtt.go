@@ -11,17 +11,20 @@ import (
 	"k8s.io/klog"
 )
 
+// MqttWrapper representing the mqtt connection in this programm
 type MqttWrapper struct {
 	clientID         string
 	client           MQTT.Client
 	subscribedTopics []string
 }
 
+// Msg representing an message which can be used to publish to an MQTT broker
 type Msg struct {
 	Topic string
 	Msg   []byte
 }
 
+// Init initialise the mqtt wrapper
 func (m *MqttWrapper) Init(username, password, host string, port int, tls bool) error {
 	mq := *m
 	rand.Seed(time.Now().UnixNano())
@@ -68,6 +71,7 @@ func (m *MqttWrapper) connect(host, deviceId, user, password string, port int, t
 	return nil
 }
 
+// Disconnect will disconnect the connection to the mqtt broker
 func (m *MqttWrapper) Disconnect(host, deviceId, user, password string, port int, tlsVerify bool) error {
 	for _, topic := range m.subscribedTopics {
 		if token := m.client.Unsubscribe(topic); token.Wait() && token.Error() != nil {
@@ -78,23 +82,25 @@ func (m *MqttWrapper) Disconnect(host, deviceId, user, password string, port int
 	return nil
 }
 
+// Subscribe subscribe to a mqtt topic and set the handler function of this topic
 func (m *MqttWrapper) Subscribe(topic string, callBack MQTT.MessageHandler) error {
 	if token := m.client.Subscribe(topic, 1, callBack); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	m.subscribedTopics = append(m.subscribedTopics, topic)
 
-	klog.InfoDepth(1, "Subscribed to topic ", topic, " \n")
+	klog.V(2).Infof("Subscribed to topic %s", topic)
 	return nil
 }
 
+// Publish publish an mqtt message to the mqtt broker
 func (m *MqttWrapper) Publish(msg Msg) error {
 	token := m.client.Publish(msg.Topic, 1, false, msg.Msg)
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 
-	klog.InfoDepth(1, "Pub: TOPIC", msg.Topic, " MSG: ", string(msg.Msg), "\n")
+	klog.V(2).Infof("Pub: TOPIC %s  MSG: %s\n", msg.Topic, string(msg.Msg))
 
 	return nil
 }
