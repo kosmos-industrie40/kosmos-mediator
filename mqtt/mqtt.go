@@ -11,7 +11,7 @@ import (
 	"k8s.io/klog"
 )
 
-// MqttWrapper representing the mqtt connection in this programm
+// MqttWrapper representing the mqtt connection in this program
 type MqttWrapper struct {
 	clientID         string
 	client           MQTT.Client
