@@ -48,7 +48,7 @@ func testExists(db *sql.DB, table, column, value string) (bool, error) {
 	return res, nil
 }
 
-// Insert will insert a new analyse result into the database
+// Insert will insert a new analyse result into a sql database
 func (a AnalyseResult) Insert(db *sql.DB, contract string) error {
 	var machineExist, sensorExist, contractExist bool
 	var err error
