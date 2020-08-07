@@ -1,3 +1,4 @@
+// Package mqttClient contains the wrapper about the mqtt sending and receiving messages
 package mqttClient
 
 import (

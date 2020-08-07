@@ -1,3 +1,4 @@
+// Package models containing data models, which are used in different parts of the programm
 package models
 
 import (
