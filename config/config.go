@@ -1,3 +1,5 @@
+// Package config provides methods to open an file and parse the data into the
+// configuration data model or the password data model
 package config
 
 import (
