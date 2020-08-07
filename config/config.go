@@ -10,6 +10,7 @@ import (
 	"gitlab.inovex.de/proj-kosmos/intern-mqtt-db/models"
 )
 
+// ParseConfiguration parse a yaml file and returns the configuration in the configuration data model.
 func ParseConfigurations(path string, configurations *models.Configuration) error {
 	file, err := os.Open(path)
 	if err != nil {
@@ -26,6 +27,9 @@ func ParseConfigurations(path string, configurations *models.Configuration) erro
 	return handleConfiguration(file, configurations)
 }
 
+// handleConfiguration is used to provide a better possibility to test this functionality
+// (not mocking file open operations)
+// this function will decode the open file to the configuration data model
 func handleConfiguration(handle io.Reader, conf *models.Configuration) error {
 	decoder := yaml.NewDecoder(handle)
 	decoder.SetStrict(true)
@@ -37,6 +41,7 @@ func handleConfiguration(handle io.Reader, conf *models.Configuration) error {
 	return nil
 }
 
+// ParsePassword parse a yaml file and returns the passowrd-user combinations in the passsword data model.
 func ParsePassword(path string, password *models.Password) error {
 	file, err := os.Open(path)
 	if err != nil {
@@ -53,6 +58,9 @@ func ParsePassword(path string, password *models.Password) error {
 	return handlePassword(file, password)
 }
 
+// handlePassword is used to provide a better possibility to test this functionality
+// (not mocking file open operations)
+// this function will decode the open file to the password data model
 func handlePassword(handle io.Reader, password *models.Password) error {
 	decoder := yaml.NewDecoder(handle)
 	decoder.SetStrict(true)
