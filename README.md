@@ -1,13 +1,30 @@
 # intern-mqtt-db
 
-This project receives data from mqtt and write those data into a postgres database
+This project will insert received messages into a database and send a mqtt messages to the next ml-tool in the ml-pipline
 
 ## Table of Content
 
+- [Description](#description)
 - [Dependencies](#dependencies)
 - [Build](#build)
 - [Test](#test)
 - [Configuration](#configration)
+
+## Description
+This project has to two tasks.
+1. receiving messages from the mqtt broker and write this data into a database
+1. based on the received data finding the next step which has to be done in the ml pipeline
+
+The first part of the task has to be extended by a non persistent part, because there are messages on which the data should not store in the
+database. The topics on which this project will subscribe:
+- `kosmos/analyses/+`
+- `kosmos/analyses/+/temporary`
+- `kosmos/machine-data/+/sensor/+/update`
+- `kosmos/machine-data/+/sensor/+/update/temporary`
+
+In the second part of the program the produced messages will be published on the topic matching this subscribe topic `kosmos/analyses/+/+`.
+The first wild card subtopic contains the URL of the used ml-image. We use an URL encoding to remove special characters and replace all `/` with the `-`.
+In the second wild card subtopic contains the tag of the image.
 
 ## Dependencies
 Golang 1.14 is used to write this endpoint. So golang is 
@@ -22,7 +39,7 @@ or install Mosquitto check out [Download Mosquitto page](https://mosquitto.org/d
 ## Build 
 You can build this program by executing `make` or `go build ./...`. 
 
-The database layout is given into two files. Part one can be found in the README of the [KOSMoS-Analyses-Cloud-Conector](https://gitlab.inovex.de/proj-kosmos/kosmos-analyses-cloud-connector) reposistory. Part two will be used with the local createDatabase.sql file. To create the missing database table, you can execute the following command:
+The database layout is given into two files. Part one can be found in the README of the [KOSMoS-Analyses-Cloud-Conector](https://gitlab.inovex.de/proj-kosmos/kosmos-analyses-cloud-connector) repository. Part two will be used with the local createDatabase.sql file. To create the missing database table, you can execute the following command:
 ```bash
 psql -h <host> -d <database> -U <database user> <createDatabase.sql
 ```
@@ -37,14 +54,16 @@ To insert the used data (sensor, machine contract) into the database you can exe
 psql -d <database> -h <host> -U <user> <test/insert.sql
 ```
 
-The following script will publish the sensor update messages and analys result to the mqtt broker.
+The following script will publish the sensor update messages and analyse result to the mqtt broker.
 ```bash
 for x in 'test/examplePayload/sensor*'; do
 mosquitto_pub -h <host> -p <port> -t kosmos/machine-data/machine/sensor/sensor/update -f $x
+mosquitto_pub -h <host> -p <port> -t kosmos/machine-data/machine/sensor/sensor/update/temporary -f $x
 done
 
 for x in 'test/examplePayload/analyse*'; do
 mosquitto_pub -h <host> -p <port> -t kosmos/analyses/contract -f $x
+mosquitto_pub -h <host> -p <port> -t kosmos/analyses/contract/temporary -f $x
 done
 ```
 
