@@ -1,3 +1,4 @@
+// Package models containing data models, which are used in different parts of the programm
 package models
 
 import (
@@ -9,6 +10,7 @@ import (
 	"k8s.io/klog"
 )
 
+// AnalyseResult representing the AnalyseResult message
 type AnalyseResult struct {
 	Schema     string      `json:"$schema,omitempty"`
 	From       string      `json:"from"`
@@ -24,6 +26,7 @@ type AnalyseResult struct {
 	} `json:"calculated"`
 }
 
+// testExists will test in the database in a defined table if an defined value exists in the defined column
 func testExists(db *sql.DB, table, column, value string) (bool, error) {
 	dbResult, err := db.Query(fmt.Sprintf("SELECT EXISTS (SELECT 1 FROM %s WHERE %s = $1 LIMIT 1)", table, column), value)
 	if err != nil {
@@ -48,7 +51,7 @@ func testExists(db *sql.DB, table, column, value string) (bool, error) {
 	return res, nil
 }
 
-// Insert will insert a new analyse result into the database
+// Insert will insert a new analyse result into a sql database
 func (a AnalyseResult) Insert(db *sql.DB, contract string) error {
 	var machineExist, sensorExist, contractExist bool
 	var err error

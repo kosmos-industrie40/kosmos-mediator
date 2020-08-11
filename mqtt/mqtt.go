@@ -1,3 +1,4 @@
+// Package mqttClient contains the wrapper about the mqtt sending and receiving messages
 package mqttClient
 
 import (
@@ -11,14 +12,14 @@ import (
 	"k8s.io/klog"
 )
 
-// MqttWrapper representing the mqtt connection in this programm
+// MqttWrapper representing the mqtt connection in this program
 type MqttWrapper struct {
 	clientID         string
 	client           MQTT.Client
 	subscribedTopics []string
 }
 
-// Msg representing an message which can be used to publish to an MQTT broker
+// Msg representing an message which can be used to publish the message to an MQTT broker
 type Msg struct {
 	Topic string
 	Msg   []byte

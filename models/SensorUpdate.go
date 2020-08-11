@@ -1,3 +1,4 @@
+// Package models containing data models, which are used in different parts of the programm
 package models
 
 import (
@@ -9,6 +10,7 @@ import (
 	"k8s.io/klog"
 )
 
+// SensorUpdate representing the mqtt sensor update message
 type SensorUpdate struct {
 	Schema    string      `json:"$schema,omitempty"`
 	Timestamp int64       `json:"timestamp"`
@@ -18,7 +20,7 @@ type SensorUpdate struct {
 	Meta      interface{} `json:"meta"`
 }
 
-// insert will insert a new sensor update message into the database
+// Insert will insert a new sensor update message into a sql database
 func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 	result, err := db.Query("SELECT machine_sensor.id FROM machine_sensor JOIN sensor ON sensor.id = machine_sensor.sensor WHERE sensor.transmitted_id = $1 AND machine_sensor.machine = $2", sensor, machine)
 	if err != nil {

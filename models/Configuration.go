@@ -1,5 +1,7 @@
+// Package models containing data models, which are used in different parts of the programm
 package models
 
+// Configuration is the internal representation of the configuration file
 type Configuration struct {
 	Database struct {
 		Address  string `yaml:"address"`
