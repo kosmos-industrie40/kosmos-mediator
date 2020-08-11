@@ -12,6 +12,7 @@ import (
 	mqttClient "gitlab.inovex.de/proj-kosmos/intern-mqtt-db/mqtt"
 )
 
+// representing temporarry data type
 type Temprorary struct {
 	regexUp  *regexp.Regexp
 	regexAna *regexp.Regexp
@@ -28,6 +29,7 @@ var regexs = [2]string{
 	"kosmos/analyses/[a-zA-Z0-9]+/temporary",
 }
 
+// IInitTemprorary initialise the temporary type and subscribe to the expected */temporrary topics
 func InitTemprorary(mq *mqttClient.MqttWrapper, sendChan chan<- models.MessageBase) error {
 	msg := Temprorary{
 		regexUp:  regexp.MustCompile(regexs[0]),
@@ -45,6 +47,7 @@ func InitTemprorary(mq *mqttClient.MqttWrapper, sendChan chan<- models.MessageBa
 	return nil
 }
 
+// handler callback functions which handle incomming messages
 func (t Temprorary) handler(client MQTT.Client, msg MQTT.Message) {
 	klog.Infof("receive temp on topic %s\n", msg.Topic())
 

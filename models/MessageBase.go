@@ -1,4 +1,3 @@
-// Package models containing data models, which are used in different parts of the programm
 package models
 
 // MessageBase will be used to transmit data between
