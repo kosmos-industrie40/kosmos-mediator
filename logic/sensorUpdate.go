@@ -23,12 +23,12 @@ type SensorUpdate struct {
 	db       *sql.DB
 	mqtt     *mqttClient.MqttWrapper
 	regex    *regexp.Regexp
-	sendChan chan<- MessageBase
+	sendChan chan<- models.MessageBase
 }
 
 // InitInitSensorUpdate initialise the SensorUpdate logic
 // subscribe to a mqtt topic and set the handler of this topic
-func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- MessageBase) error {
+func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- models.MessageBase) error {
 	regex := regexp.MustCompile(regex)
 	su := SensorUpdate{regex: regex, db: db, mqtt: mq, sendChan: sendChan}
 	if err := mq.Subscribe(topic, su.sensorHandler); err != nil {
@@ -65,10 +65,12 @@ func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
-	su.sendChan <- MessageBase{
+	su.sendChan <- models.MessageBase{
 		Machine:      machineID,
 		Sensor:       sensorID,
 		LastAnalyses: "",
+		Contract:     "",
+		Message:      msg.Payload(),
 	}
 
 	klog.V(2).Info("sensor update is handeld successfully")
