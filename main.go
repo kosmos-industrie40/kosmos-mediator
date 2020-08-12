@@ -58,6 +58,9 @@ func main() {
 		klog.Errorf("cannot connect with mqtt broker: %s\n", err)
 		os.Exit(1)
 	}
+
+	go logic.Mediator(db, mqtt, sendChan)
+
 	if err := logic.InitSensorUpdate(db, &mqtt, sendChan); err != nil {
 		klog.Errorf("can not subscribe sensor update: %s\n", err)
 		os.Exit(1)
