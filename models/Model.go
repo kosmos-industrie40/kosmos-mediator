@@ -2,12 +2,37 @@ package models
 
 import (
 	"database/sql"
+
+	"k8s.io/klog"
 )
 
 // Model representing the database table model
 type Model struct {
 	Url string `json:"url"`
 	Tag string `json:"tag"`
+}
+
+func (m Model) InitialPipeline(db *sql.DB, machine, sensor, contract string) (Model, error) {
+	id, err := getMachineSensorId(db, machine, sensor)
+	if err != nil {
+		return Model{}, err
+	}
+
+	res, err := db.Query("SELECT url, tag FROM model JOIN next_analyses on model.id = next_analyses.next_model JOIN pipeline on next_analyses.id = pipeline.analyses WHERE contract = $1 AND machine_sensor = $2 AND next_model is NULL", contract, id)
+	if err != nil {
+		return Model{}, err
+	}
+	defer func() {
+		if err := res.Close(); err != nil {
+			klog.Errorf("could not close result query: %s\n", err)
+		}
+	}()
+
+	var url, tag string
+
+	res.Next()
+	err = res.Scan(&url, &tag)
+	return Model{Url: url, Tag: tag}, err
 }
 
 func (m Model) TestEnd(db *sql.DB, machine, sensor, contract string) (bool, error) {
@@ -45,10 +70,15 @@ func (m Model) Next(db *sql.DB, machine, sensor, contract string) (Model, error)
 		return Model{}, err
 	}
 
-	query, err := db.Query("SELECT model.url, model.tag FROM model JOIN next_analyses ON next_analyses.next_model = model.id JOIN pipeline ON pipeline.next_analyses = next_analyses.id WHERE pipeline.contract = $1 AND next_analyses.machine_sensor = $2 AND next_analyses.previous_model = $3", contract, machSens, prevModel)
+	query, err := db.Query("SELECT model.url, model.tag FROM model JOIN next_analyses ON next_analyses.next_model = model.id JOIN pipeline ON pipeline.analyses = next_analyses.id WHERE pipeline.contract = $1 AND next_analyses.machine_sensor = $2 AND next_analyses.previous_model = $3", contract, machSens, prevModel)
 	if err != nil {
 		return Model{}, err
 	}
+	defer func() {
+		if err := query.Close(); err != nil {
+			klog.Errorf("could not close query: %s\n", err)
+		}
+	}()
 
 	var url, tag string
 
