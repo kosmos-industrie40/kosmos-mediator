@@ -6,8 +6,30 @@ import (
 
 // Model representing the database table model
 type Model struct {
-	Url string
-	Tag string
+	Url string `json:"url"`
+	Tag string `json:"tag"`
+}
+
+func (m Model) TestEnd(db *sql.DB, machine, sensor, contract string) (bool, error) {
+	machSens, err := getMachineSensorId(db, machine, sensor)
+	if err != nil {
+		return false, err
+	}
+
+	prevModel, err := m.getIdModel(db)
+	if err != nil {
+		return false, err
+	}
+	query, err := db.Query("SELECT EXISTS (SELECT 1 FROM model JOIN next_analyses ON next_analyses.next_model = model.id JOIN pipeline ON pipeline.next_analyses = next_analyses.id WHERE pipeline.contract = $1 AND next_analyses.machine_sensor = $2 AND next_analyses.previous_model = $3", contract, machSens, prevModel)
+	if err != nil {
+		return false, err
+	}
+
+	var exists bool
+
+	query.Next()
+	err = query.Scan(&exists)
+	return exists, err
 }
 
 // Next query the next model based on the current model
@@ -31,7 +53,7 @@ func (m Model) Next(db *sql.DB, machine, sensor, contract string) (Model, error)
 	var url, tag string
 
 	query.Next()
-	err = query.Scan(url, tag)
+	err = query.Scan(&url, &tag)
 	return Model{Url: url, Tag: tag}, err
 }
 

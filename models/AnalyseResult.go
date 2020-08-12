@@ -24,6 +24,7 @@ type AnalyseResult struct {
 			Sensor  string `json:"sensor"`
 		}
 	} `json:"calculated"`
+	Model Model `json:"model"`
 }
 
 // testExists will test in the database in a defined table if an defined value exists in the defined column
@@ -73,12 +74,12 @@ func (a AnalyseResult) Insert(db *sql.DB, contract string) error {
 	}
 
 	tm := time.Unix(a.Date, 0)
-	json, err := json.Marshal(a)
+	js, err := json.Marshal(a)
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Exec("INSERT INTO analyse_result (contract, machine, sensor, time, result) VALUES ($1, $2, $3, $4, $5)", contract, a.Calculated.Message.Machine, a.Calculated.Message.Sensor, tm, json)
+	_, err = db.Exec("INSERT INTO analyse_result (contract, machine, sensor, time, result) VALUES ($1, $2, $3, $4, $5)", contract, a.Calculated.Message.Machine, a.Calculated.Message.Sensor, tm, js)
 
 	return err
 }

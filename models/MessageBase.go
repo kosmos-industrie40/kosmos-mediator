@@ -18,4 +18,5 @@ type MessageBase struct {
 	Message      []byte
 	Contract     string
 	MessageTyp   MessageTyp
+	Model        Model
 }

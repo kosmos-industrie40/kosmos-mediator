@@ -67,6 +67,9 @@ func (t Temprorary) handler(client MQTT.Client, msg MQTT.Message) {
 			Contract:     "",
 			MessageTyp:   models.Update,
 		}
+	// handle analyses message temporary message
+	case t.regexAna.MatchString(msg.Topic()):
+		klog.V(2).Infof("analyses result message temp")
 
 		topAr := strings.Split(msg.Topic(), "/")
 		contract := topAr[2]
@@ -84,12 +87,8 @@ func (t Temprorary) handler(client MQTT.Client, msg MQTT.Message) {
 			Message:      msg.Payload(),
 			Contract:     contract,
 			MessageTyp:   models.Analyses,
+			Model:        analyses.Model,
 		}
-
-	// handle analyses message temporary message
-	case t.regexAna.MatchString(msg.Topic()):
-		klog.V(2).Infof("analyses result message temp")
-
 	// unexpected topic
 	default:
 		klog.Errorf("could not verify topic: %s\n", msg.Topic())
