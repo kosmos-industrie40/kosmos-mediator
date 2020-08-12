@@ -65,6 +65,7 @@ func (t Temprorary) handler(client MQTT.Client, msg MQTT.Message) {
 			LastAnalyses: "",
 			Message:      msg.Payload(),
 			Contract:     "",
+			MessageTyp:   models.Update,
 		}
 
 		topAr := strings.Split(msg.Topic(), "/")
@@ -82,6 +83,7 @@ func (t Temprorary) handler(client MQTT.Client, msg MQTT.Message) {
 			Sensor:       analyses.Calculated.Message.Sensor,
 			Message:      msg.Payload(),
 			Contract:     contract,
+			MessageTyp:   models.Analyses,
 		}
 
 	// handle analyses message temporary message
