@@ -3,11 +3,15 @@
   "calculated": {
     "received": 55,
     "message": {
-    	"machine": "mach",
-	"sensor": "mod"
+      "machine": "abc",
+      "sensor": "134wdsf"
     }
   },
-  "date": 88464231654,
+  "timestamp": "2020-08-15T15:46:55.789",
+  "model": {
+    "url": "abc",
+    "tag": "ab"
+  },
   "from": "ml-0",
   "type": "time_series",
   "results": {
