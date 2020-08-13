@@ -71,6 +71,7 @@ func (ar AnalysesResult) handler(client MQTT.Client, msg MQTT.Message) {
 		Contract:     contract,
 		Message:      msg.Payload(),
 		MessageTyp:   models.Analyses,
+		Model:        analyse.Model,
 	}
 
 	klog.V(2).Info("analyse result is handeld successfully")
