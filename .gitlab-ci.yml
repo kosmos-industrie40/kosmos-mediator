@@ -29,7 +29,6 @@ unit_test:
         stage: test
         tags:
                 - shared
-        before_script:
         script:
                 - go get -u github.com/jstemmer/go-junit-report
                 - go test ./... -coverprofile unit-test.out -race --tags unit | go-junit-report > report.xml
