@@ -26,6 +26,7 @@ func Mediator(db *sql.DB, mq mqttClient.MqttWrapper, sendChan <-chan models.Mess
 		switch base.MessageTyp {
 		// handle messages based on analytics
 		case models.Analyses:
+			klog.V(2).Infof("handle analyse case")
 			mo := base.Model
 			exists, err := mo.TestEnd(db, base.Machine, base.Sensor, base.Contract)
 			if err != nil {
@@ -34,6 +35,7 @@ func Mediator(db *sql.DB, mq mqttClient.MqttWrapper, sendChan <-chan models.Mess
 			}
 
 			if !exists {
+				klog.V(2).Infof("pipeline end found")
 				continue
 			}
 
@@ -52,19 +54,26 @@ func Mediator(db *sql.DB, mq mqttClient.MqttWrapper, sendChan <-chan models.Mess
 			}
 			typ = "sensor_update"
 		default:
-			klog.Errorf("Unexpected MessageType, message will not be futher processed")
+			klog.Errorf("Unexpected MessageType, message will not be further processed")
 			continue
 		}
 
 		// url escaping
 		encode := url.QueryEscape(model.Url)
-		// repalce / with - to precent several subtopics
+		// replace / with - to percent several subtopics
 		modelUrl := strings.ReplaceAll(encode, "/", "-")
+
+		var oldMsg interface{}
+
+		if err := json.Unmarshal(base.Message, &oldMsg); err != nil {
+			klog.Errorf("cannot unmarshal the previous received message")
+			continue
+		}
 
 		msg := models.SendMsg{
 			Contract: base.Contract,
 			Type:     typ,
-			Payload:  base.Message,
+			Payload:  oldMsg,
 		}
 
 		bytes, err := json.Marshal(msg)
