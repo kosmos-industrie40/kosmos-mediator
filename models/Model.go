@@ -12,6 +12,7 @@ type Model struct {
 	Tag string `json:"tag"`
 }
 
+// InitialPipeline find the initial model in the pipeline
 func (m Model) InitialPipeline(db *sql.DB, machine, sensor string) (Model, error) {
 	id, err := getMachineSensorId(db, machine, sensor)
 	if err != nil {
@@ -43,6 +44,7 @@ func (m Model) InitialPipeline(db *sql.DB, machine, sensor string) (Model, error
 	return Model{Url: url, Tag: tag}, err
 }
 
+// TestEnd test if the last analyses in the pipeline has be made
 func (m Model) TestEnd(db *sql.DB, machine, sensor, contract string) (bool, error) {
 	machSens, err := getMachineSensorId(db, machine, sensor)
 	if err != nil {
@@ -152,6 +154,7 @@ func getMachineSensorId(db *sql.DB, machine, sensor string) (int64, error) {
 	return id, err
 }
 
+// getContract get the contract of a machine and machineSensor combination
 func getContract(db *sql.DB, machine string, machineSensor int64) (string, error) {
 	klog.V(2).Infof("query after: machine %s and machineSensor %d", machine, machineSensor)
 	qu, err := db.Query("SELECT contract.id FROM contract JOIN machine_contract ON contract.id = machine_contract.contract JOIN machine_sensor ON machine_contract.machine = machine_sensor.machine WHERE machine_contract.machine = $1 AND machine_sensor.id = $2", machine, machineSensor)

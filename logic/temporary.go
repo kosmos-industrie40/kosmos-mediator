@@ -29,7 +29,7 @@ var regexs = [2]string{
 	"kosmos/analyses/[a-zA-Z0-9]+/temporary",
 }
 
-// IInitTemprorary initialise the temporary type and subscribe to the expected */temporrary topics
+// InitTemprorary initialise the temporary type and subscribe to the expected */temporrary topics
 func InitTemprorary(mq *mqttClient.MqttWrapper, sendChan chan<- models.MessageBase) error {
 	msg := Temprorary{
 		regexUp:  regexp.MustCompile(regexs[0]),
