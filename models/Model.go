@@ -12,13 +12,21 @@ type Model struct {
 	Tag string `json:"tag"`
 }
 
-func (m Model) InitialPipeline(db *sql.DB, machine, sensor, contract string) (Model, error) {
+func (m Model) InitialPipeline(db *sql.DB, machine, sensor string) (Model, error) {
 	id, err := getMachineSensorId(db, machine, sensor)
 	if err != nil {
 		return Model{}, err
 	}
+	klog.V(2).Infof("id of machine-sensor %d", id)
 
-	res, err := db.Query("SELECT url, tag FROM model JOIN next_analyses on model.id = next_analyses.next_model JOIN pipeline on next_analyses.id = pipeline.analyses WHERE contract = $1 AND machine_sensor = $2 AND next_model is NULL", contract, id)
+	contract, err := getContract(db, machine, id)
+	if err != nil {
+		return Model{}, err
+	}
+	klog.V(2).Infof("id of the matching contract: %s\n", contract)
+
+	klog.V(2).Infof("parameters of the next query: contract = %s; machine_sensor: %d\n", contract, id)
+	res, err := db.Query("SELECT url, tag FROM model JOIN next_analyses on model.id = next_analyses.next_model JOIN pipeline on next_analyses.id = pipeline.analyses WHERE contract = $1 AND machine_sensor = $2 AND previous_model is NULL", contract, id)
 	if err != nil {
 		return Model{}, err
 	}
@@ -142,4 +150,28 @@ func getMachineSensorId(db *sql.DB, machine, sensor string) (int64, error) {
 	query.Next()
 	err = query.Scan(&id)
 	return id, err
+}
+
+func getContract(db *sql.DB, machine string, machineSensor int64) (string, error) {
+	klog.V(2).Infof("query after: machine %s and machineSensor %d", machine, machineSensor)
+	qu, err := db.Query("SELECT contract.id FROM contract JOIN machine_contract ON contract.id = machine_contract.contract JOIN machine_sensor ON machine_contract.machine = machine_sensor.machine WHERE machine_contract.machine = $1 AND machine_sensor.id = $2", machine, machineSensor)
+	if err != nil {
+		return "", err
+	}
+
+	defer func() {
+		if err := qu.Close(); err != nil {
+			klog.Errorf("cannot close query response: %s\n", err)
+		}
+	}()
+
+	var contract string
+
+	for qu.Next() {
+		if err := qu.Scan(&contract); err != nil {
+			return "", err
+		}
+	}
+
+	return contract, nil
 }

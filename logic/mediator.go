@@ -47,7 +47,7 @@ func Mediator(db *sql.DB, mq mqttClient.MqttWrapper, sendChan <-chan models.Mess
 			typ = "analyse_result"
 		// handle messages based on update
 		case models.Update:
-			model, err = model.InitialPipeline(db, base.Machine, base.Sensor, base.Contract)
+			model, err = model.InitialPipeline(db, base.Machine, base.Sensor)
 			if err != nil {
 				klog.Errorf("cannot find the next analytic model message will not be further processed: %s\n", err)
 				continue
