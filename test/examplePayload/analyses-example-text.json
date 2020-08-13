@@ -3,14 +3,14 @@
   "from": "creator of this message",
   "timestamp": "2020-08-12T15:46:10.821",
   "model": {
-    "url": "abc",
-    "tag": "ab"
+    "url": "url",
+    "tag": "tag"
   },
   "type": "text",
   "calculated": {
     "message": {
-      "machine": "abc",
-      "sensor": "134wdsf"
+      "machine": "machine",
+      "sensor": "sensor"
     },
     "received": 1585758100
   },

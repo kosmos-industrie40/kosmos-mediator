@@ -3,13 +3,13 @@
   "calculated": {
     "received": 55,
     "message": {
-      "machine": "abc",
-      "sensor": "134wdsf"
+      "machine": "machine",
+      "sensor": "sensor"
     }
   },
   "model": {
-    "url": "abc",
-    "tag": "aa"
+    "url": "url",
+    "tag": "1"
   },
   "timestamp": "2020-08-12T15:40:22.879",
   "from": "ml-0",

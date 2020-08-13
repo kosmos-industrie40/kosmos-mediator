@@ -3,14 +3,14 @@
   "calculated": {
     "received": 55,
     "message": {
-      "machine": "abc",
-      "sensor": "134wdsf"
+      "machine": "machine",
+      "sensor": "sensor"
     }
   },
   "timestamp": "2020-08-15T15:46:55.789",
   "model": {
-    "url": "abc",
-    "tag": "ab"
+    "url": "url",
+    "tag": "tag"
   },
   "from": "ml-0",
   "type": "time_series",
