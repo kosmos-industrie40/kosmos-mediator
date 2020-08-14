@@ -148,6 +148,12 @@ func getMachineSensorId(db *sql.DB, machine, sensor string) (int64, error) {
 		return -1, err
 	}
 
+	defer func() {
+		if err := query.Close(); err != nil {
+			klog.Errorf("cannot close query object :%s\n", err)
+		}
+	}()
+
 	var id int64
 	query.Next()
 	err = query.Scan(&id)
