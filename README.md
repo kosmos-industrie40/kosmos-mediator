@@ -70,13 +70,13 @@ mosquitto_pub -h <host> -p <port> -t kosmos/analyses/contract/temporary -f $x
 done
 ```
 
-To receive the messages form the mediator, you can use the following command:
+To receive the messages from the mediator, you can use the following command:
 ```bash
 mosquitto_sub -h <host> -p <port> -t 'kosmos/analytics/+/+'
 ``` 
 
 ## Configuration
-The configuration of the application will be made through two configurations files and command line flags. 
+The configuration of the application will be made through two configuration files and command line flags. 
 The configuration parameters will be explained in the next three sections.
 
 ### CLI-Flags
