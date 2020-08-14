@@ -71,7 +71,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := logic.InitTemprorary(&mqtt, sendChan); err != nil {
+	if err := logic.InitTemporary(&mqtt, sendChan); err != nil {
 		klog.Errorf("can not subscribe to temporary topics: %s\n", err)
 		os.Exit(1)
 	}

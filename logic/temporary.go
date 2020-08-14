@@ -13,25 +13,25 @@ import (
 )
 
 // representing temporarry data type
-type Temprorary struct {
+type Temporary struct {
 	regexUp  *regexp.Regexp
 	regexAna *regexp.Regexp
 	sendChan chan<- models.MessageBase
 }
 
 var topics = [2]string{
-	"kosmos/machine-data/+/sensor/+/update/temprary",
+	"kosmos/machine-data/+/sensor/+/update/temporary",
 	"kosmos/analyses/+/temporary",
 }
 
 var regexs = [2]string{
-	"kosmos/machine-data/[a-zA-Z0-9]+/sensor/[a-zA-Z0-9]+/update/temprary",
+	"kosmos/machine-data/[a-zA-Z0-9]+/sensor/[a-zA-Z0-9]+/update/temporary",
 	"kosmos/analyses/[a-zA-Z0-9]+/temporary",
 }
 
-// InitTemprorary initialise the temporary type and subscribe to the expected */temporrary topics
-func InitTemprorary(mq *mqttClient.MqttWrapper, sendChan chan<- models.MessageBase) error {
-	msg := Temprorary{
+// InitTemporary initialise the temporary type and subscribe to the expected */temporary topics
+func InitTemporary(mq *mqttClient.MqttWrapper, sendChan chan<- models.MessageBase) error {
+	msg := Temporary{
 		regexUp:  regexp.MustCompile(regexs[0]),
 		regexAna: regexp.MustCompile(regexs[1]),
 		sendChan: sendChan,
@@ -48,7 +48,7 @@ func InitTemprorary(mq *mqttClient.MqttWrapper, sendChan chan<- models.MessageBa
 }
 
 // handler callback functions which handle incomming messages
-func (t Temprorary) handler(client MQTT.Client, msg MQTT.Message) {
+func (t Temporary) handler(client MQTT.Client, msg MQTT.Message) {
 	klog.Infof("receive temp on topic %s\n", msg.Topic())
 
 	switch {
