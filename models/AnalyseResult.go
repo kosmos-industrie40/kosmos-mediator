@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"regexp"
+	"time"
 
 	"k8s.io/klog"
 )
@@ -18,7 +18,7 @@ type AnalyseResult struct {
 	Signature  string      `json:"signature,omitempty"`
 	Results    interface{} `json:"results"`
 	Calculated struct {
-		Received int64 `json:"received"`
+		Received string `json:"received"`
 		Message  struct {
 			Machine string `json:"machine"`
 			Sensor  string `json:"sensor"`
@@ -77,17 +77,13 @@ func (a AnalyseResult) Insert(db *sql.DB, contract string) error {
 	if err != nil {
 		return err
 	}
-	match, err := regexp.MatchString("^[0-9]{4}-[]0-9]{2}-[0-9]{2}T[012][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]*$", a.Timestamp)
+
+	tm, err := time.Parse("2006-01-02T15:04:05-0700", a.Timestamp)
 	if err != nil {
-		klog.Errorf("can not use regexp: %s\n", err)
-		return err
+		klog.Errorf("timestamp can not be parsed: %s\n", err)
 	}
 
-	if !match  {
-		klog.V(2).Infof("timestamp does not match")
-		return nil
-	}
-	_, err = db.Exec("INSERT INTO analyse_result (contract, machine, sensor, time, result) VALUES ($1, $2, $3, $4, $5)", contract, a.Calculated.Message.Machine, a.Calculated.Message.Sensor, a.Timestamp, js)
+		_, err = db.Exec("INSERT INTO analyse_result (contract, machine, sensor, time, result) VALUES ($1, $2, $3, $4, $5)", contract, a.Calculated.Message.Machine, a.Calculated.Message.Sensor, tm, js)
 
 	return err
 }

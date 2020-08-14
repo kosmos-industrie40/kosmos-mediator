@@ -1,13 +1,13 @@
 {
   "$schema": "analyses-formal.json",
   "calculated": {
-    "received": 55,
+    "received": "2020-08-14T07:51:51.1234+00:00",
     "message": {
       "machine": "machine",
       "sensor": "sensor"
     }
   },
-  "timestamp": "2020-08-15T15:46:55.789",
+  "timestamp": "2020-08-15T15:46:55.789+00:00",
   "model": {
     "url": "url",
     "tag": "tag"

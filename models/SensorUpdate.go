@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"regexp"
+	"time"
 
 	"k8s.io/klog"
 )
@@ -58,17 +58,12 @@ func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 		return fmt.Errorf("could not marshal data: %s", err)
 	}
 
-	match, err := regexp.MatchString("^[0-9]{4}-[]0-9]{2}-[0-9]{2}T[012][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]*$", s.Timestamp)
+	tm, err := time.Parse("2006-01-02T15:04:05-0700", s.Timestamp)
 	if err != nil {
-		klog.Errorf("can not use regexp: %s\n", err)
+		klog.Errorf("timestamp can not be parsed: %s\n", err)
 	}
 
-	if !match {
-		klog.V(2).Infof("timestamp does not match")
-		return nil
-	}
-
-	if _, err := db.Exec("INSERT INTO update_message (sensor_machine, timestamp, meta, column_definition, data, signature) VALUES ($1, $2, $3, $4, $5, $6)", id, s.Timestamp, meta, columns, data, s.Signature); err != nil {
+	if _, err := db.Exec("INSERT INTO update_message (sensor_machine, timestamp, meta, column_definition, data, signature) VALUES ($1, $2, $3, $4, $5, $6)", id, tm, meta, columns, data, s.Signature); err != nil {
 		return fmt.Errorf("could not insert update_message data: %s\n", err)
 	}
 

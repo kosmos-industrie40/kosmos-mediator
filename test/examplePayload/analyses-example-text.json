@@ -1,7 +1,7 @@
 {
   "$schema": "analyses-formal.json",
   "from": "creator of this message",
-  "timestamp": "2020-08-12T15:46:10.821",
+  "timestamp": "2020-08-12T15:46:10.821+00:00",
   "model": {
     "url": "url",
     "tag": "tag"
@@ -12,7 +12,7 @@
       "machine": "machine",
       "sensor": "sensor"
     },
-    "received": 1585758100
+    "received": "2020-08-14T07:51:51.1234+00:00"
   },
   "results": {
     "total": "stop",
