@@ -58,7 +58,7 @@ func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 		return fmt.Errorf("could not marshal data: %s", err)
 	}
 
-	tm, err := time.Parse("2006-01-02T15:04:05-0700", s.Timestamp)
+	tm, err := time.Parse(time.RFC3339, s.Timestamp)
 	if err != nil {
 		klog.Errorf("timestamp can not be parsed: %s\n", err)
 	}

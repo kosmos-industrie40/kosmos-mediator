@@ -78,12 +78,12 @@ func (a AnalyseResult) Insert(db *sql.DB, contract string) error {
 		return err
 	}
 
-	tm, err := time.Parse("2006-01-02T15:04:05-0700", a.Timestamp)
+	tm, err := time.Parse(time.RFC3339, a.Timestamp)
 	if err != nil {
 		klog.Errorf("timestamp can not be parsed: %s\n", err)
 	}
 
-		_, err = db.Exec("INSERT INTO analyse_result (contract, machine, sensor, time, result) VALUES ($1, $2, $3, $4, $5)", contract, a.Calculated.Message.Machine, a.Calculated.Message.Sensor, tm, js)
+	_, err = db.Exec("INSERT INTO analyse_result (contract, machine, sensor, time, result) VALUES ($1, $2, $3, $4, $5)", contract, a.Calculated.Message.Machine, a.Calculated.Message.Sensor, tm, js)
 
 	return err
 }
