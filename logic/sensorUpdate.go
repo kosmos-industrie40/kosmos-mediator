@@ -68,7 +68,7 @@ func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 		LastAnalyses: "",
 		Contract:     "",
 		Message:      msg.Payload(),
-		MessageTyp:   models.Update,
+		MessageType:  models.Update,
 	}
 
 	klog.V(2).Info("sensor update is handeld successfully")

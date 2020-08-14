@@ -65,7 +65,7 @@ func (t Temporary) handler(client MQTT.Client, msg MQTT.Message) {
 			LastAnalyses: "",
 			Message:      msg.Payload(),
 			Contract:     "",
-			MessageTyp:   models.Update,
+			MessageType:  models.Update,
 		}
 	// handle analyses message temporary message
 	case t.regexAna.MatchString(msg.Topic()):
@@ -86,7 +86,7 @@ func (t Temporary) handler(client MQTT.Client, msg MQTT.Message) {
 			Sensor:       analyses.Calculated.Message.Sensor,
 			Message:      msg.Payload(),
 			Contract:     contract,
-			MessageTyp:   models.Analyses,
+			MessageType:  models.Analyses,
 			Model:        analyses.Model,
 		}
 	// unexpected topic

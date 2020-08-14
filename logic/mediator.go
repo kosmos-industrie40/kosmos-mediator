@@ -23,7 +23,7 @@ func Mediator(db *sql.DB, mq mqttClient.MqttWrapper, sendChan <-chan models.Mess
 			typ   string
 		)
 
-		switch base.MessageTyp {
+		switch base.MessageType {
 		// handle messages based on analytics
 		case models.Analyses:
 			klog.V(2).Infof("handle analyse case")

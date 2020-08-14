@@ -1,7 +1,7 @@
 package models
 
 // MessageTyp is an enum with the values Analyses = 1 and SensorUpdate = 2
-type MessageTyp int
+type MessageType int
 
 // can be used by the enumeration above
 const (
@@ -17,6 +17,6 @@ type MessageBase struct {
 	LastAnalyses string
 	Message      []byte
 	Contract     string
-	MessageTyp   MessageTyp
+	MessageType  MessageType
 	Model        Model
 }
