@@ -51,13 +51,16 @@ func main() {
 		klog.Errorf("could not connect to database: %s\n", err)
 	}
 
-	sendChan := make(chan logic.MessageBase, 100)
+	sendChan := make(chan models.MessageBase, 100)
 
 	mqtt := mq.MqttWrapper{}
 	if err := mqtt.Init(pas.Mqtt.User, pas.Mqtt.Password, conf.Mqtt.Address, conf.Mqtt.Port, conf.Mqtt.Tls); err != nil {
 		klog.Errorf("cannot connect with mqtt broker: %s\n", err)
 		os.Exit(1)
 	}
+
+	go logic.Mediator(db, mqtt, sendChan)
+
 	if err := logic.InitSensorUpdate(db, &mqtt, sendChan); err != nil {
 		klog.Errorf("can not subscribe sensor update: %s\n", err)
 		os.Exit(1)
@@ -65,6 +68,11 @@ func main() {
 
 	if err := logic.InitAnalyseResult(db, &mqtt, sendChan); err != nil {
 		klog.Errorf("can not subscribe sensor update: %s\n", err)
+		os.Exit(1)
+	}
+
+	if err := logic.InitTemporary(&mqtt, sendChan); err != nil {
+		klog.Errorf("can not subscribe to temporary topics: %s\n", err)
 		os.Exit(1)
 	}
 

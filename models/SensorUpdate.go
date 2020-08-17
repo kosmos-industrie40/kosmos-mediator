@@ -1,4 +1,3 @@
-// Package models containing data models, which are used in different parts of the programm
 package models
 
 import (
@@ -13,7 +12,7 @@ import (
 // SensorUpdate representing the mqtt sensor update message
 type SensorUpdate struct {
 	Schema    string      `json:"$schema,omitempty"`
-	Timestamp int64       `json:"timestamp"`
+	Timestamp string      `json:"timestamp"`
 	Columns   interface{} `json:"columns"`
 	Data      interface{} `json:"data"`
 	Signature string      `json:"signature"`
@@ -59,7 +58,10 @@ func (s SensorUpdate) Insert(db *sql.DB, machine string, sensor string) error {
 		return fmt.Errorf("could not marshal data: %s", err)
 	}
 
-	tm := time.Unix(s.Timestamp, 0)
+	tm, err := time.Parse(time.RFC3339, s.Timestamp)
+	if err != nil {
+		klog.Errorf("timestamp can not be parsed: %s\n", err)
+	}
 
 	if _, err := db.Exec("INSERT INTO update_message (sensor_machine, timestamp, meta, column_definition, data, signature) VALUES ($1, $2, $3, $4, $5, $6)", id, tm, meta, columns, data, s.Signature); err != nil {
 		return fmt.Errorf("could not insert update_message data: %s\n", err)

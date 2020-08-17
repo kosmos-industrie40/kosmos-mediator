@@ -14,16 +14,17 @@ import (
 type AnalyseResult struct {
 	Schema     string      `json:"$schema,omitempty"`
 	From       string      `json:"from"`
-	Date       int64       `json:"date"`
+	Timestamp  string      `json:"timestamp"`
 	Signature  string      `json:"signature,omitempty"`
 	Results    interface{} `json:"results"`
 	Calculated struct {
-		Received int64 `json:"received"`
+		Received string `json:"received"`
 		Message  struct {
 			Machine string `json:"machine"`
 			Sensor  string `json:"sensor"`
 		}
 	} `json:"calculated"`
+	Model Model `json:"model"`
 }
 
 // testExists will test in the database in a defined table if an defined value exists in the defined column
@@ -72,13 +73,17 @@ func (a AnalyseResult) Insert(db *sql.DB, contract string) error {
 		return fmt.Errorf("the result is made on a unknown contract, machine or sensor")
 	}
 
-	tm := time.Unix(a.Date, 0)
-	json, err := json.Marshal(a)
+	js, err := json.Marshal(a)
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Exec("INSERT INTO analyse_result (contract, machine, sensor, time, result) VALUES ($1, $2, $3, $4, $5)", contract, a.Calculated.Message.Machine, a.Calculated.Message.Sensor, tm, json)
+	tm, err := time.Parse(time.RFC3339, a.Timestamp)
+	if err != nil {
+		klog.Errorf("timestamp can not be parsed: %s\n", err)
+	}
+
+	_, err = db.Exec("INSERT INTO analyse_result (contract, machine, sensor, time, result) VALUES ($1, $2, $3, $4, $5)", contract, a.Calculated.Message.Machine, a.Calculated.Message.Sensor, tm, js)
 
 	return err
 }

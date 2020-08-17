@@ -1,6 +1,6 @@
 {
   "$schema": "data-formal.json",
-  "timestamp": 1585902707,
+  "timestamp": "2020-08-15T15:33:44.897",
   "columns": [
     {
       "name": "value",
@@ -12,8 +12,8 @@
     }
   ],
   "data": [
-    ["15","12"],
-    ["2","1"]
+    ["15"],
+    ["2"]
   ],
   "meta": [
     {

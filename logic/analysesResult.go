@@ -24,12 +24,12 @@ type AnalysesResult struct {
 	db       *sql.DB
 	mqtt     *mqttClient.MqttWrapper
 	regex    *regexp.Regexp
-	sendChan chan<- MessageBase
+	sendChan chan<- models.MessageBase
 }
 
 // InitAnalyseResult initialise the analytic result logic
 // and subscribe to the specific topic and set the handler
-func InitAnalyseResult(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- MessageBase) error {
+func InitAnalyseResult(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- models.MessageBase) error {
 	reg := regexp.MustCompile(rege)
 	ar := AnalysesResult{regex: reg, db: db, mqtt: mq, sendChan: sendChan}
 	if err := mq.Subscribe(topi, ar.handler); err != nil {
@@ -64,10 +64,14 @@ func (ar AnalysesResult) handler(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
-	ar.sendChan <- MessageBase{
+	ar.sendChan <- models.MessageBase{
 		Machine:      analyse.Calculated.Message.Machine,
 		Sensor:       analyse.Calculated.Message.Sensor,
 		LastAnalyses: analyse.From,
+		Contract:     contract,
+		Message:      msg.Payload(),
+		MessageType:  models.Analyses,
+		Model:        analyse.Model,
 	}
 
 	klog.V(2).Info("analyse result is handeld successfully")

@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mediator-configuration
+  labels:
+    type: mediator
+    app: mediator
+data:
+  configuration.yaml: |
+    database:
+      address: timescaledb-postgresql.postgres.svc.cluster.local
+      port: 5432
+      database: connector
+    mqtt:
+      address: mosquitto-service.messaging.svc.cluster.local
+      port 1883
+      tls: false
+    webserver:
+      address: "0.0.0.0"
+      port: 8080
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mediator-password
+  labels:
+    type: mediator
+    app: mediator
+stringData:
+  password.yaml: |
+    mqtt:
+      user: kosmos
+      password: kosmos
+    database:
+      user: kosmos
+      password: kosmos
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediator
+  labels:
+    type: mediator
+    app: mediator
+spec:
+  selector:
+    matchLabels:
+      app: mediator
+      type: mediator
+  template:
+    metadata:
+      labels:
+        app: mediator
+        type: mediator
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: executor
+          ports:
+            - containerPort: 8080
+              hostPort: 8080
+              protocol: TCP
+          image: |
+            harbor.kosmos.idcp.inovex.io/analyse-platform-kosmos/mediator:v0.0.1
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mediator
+  labels:
+    app: mediator
+    type: mediator
+spec:
+  endpoints:
+    - interval: 15s
+      port: 8080
+      path: "/metrics"
+      scheme: "HTTP"
+  selector:
+    matchLabels:
+      app: mediator
+      type: mediator
