@@ -4,5 +4,7 @@ package models
 type SendMsg struct {
 	Contract string      `json:"contract"`
 	Type     string      `json:"type"`
+	Machine  string      `json:"machine"`
+	Sensor   string      `json:"sensor"`
 	Payload  interface{} `json:"payload"`
 }
