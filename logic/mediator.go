@@ -52,6 +52,16 @@ func Mediator(db *sql.DB, mq mqttClient.MqttWrapper, sendChan <-chan models.Mess
 				klog.Errorf("cannot find the next analytic model message will not be further processed: %s\n", err)
 				continue
 			}
+			machineSensorId, err := models.GetMachineSensorId(db, base.Machine, base.Sensor)
+			if err != nil {
+				klog.Errorf("cannot get the machine sensor id: %s", err)
+				continue
+			}
+			base.Contract, err = models.GetContract(db, base.Machine, machineSensorId)
+			if err != nil {
+				klog.Errorf("cannot get the matching contract: %s", err)
+				continue
+			}
 			typ = "sensor_update"
 		default:
 			klog.Errorf("Unexpected MessageType, message will not be further processed")
