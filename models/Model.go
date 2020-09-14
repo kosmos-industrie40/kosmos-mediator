@@ -14,13 +14,13 @@ type Model struct {
 
 // InitialPipeline find the initial model in the pipeline
 func (m Model) InitialPipeline(db *sql.DB, machine, sensor string) (Model, error) {
-	id, err := getMachineSensorId(db, machine, sensor)
+	id, err := GetMachineSensorId(db, machine, sensor)
 	if err != nil {
 		return Model{}, err
 	}
 	klog.V(2).Infof("id of machine-sensor %d", id)
 
-	contract, err := getContract(db, machine, id)
+	contract, err := GetContract(db, machine, id)
 	if err != nil {
 		return Model{}, err
 	}
@@ -46,7 +46,7 @@ func (m Model) InitialPipeline(db *sql.DB, machine, sensor string) (Model, error
 
 // TestEnd test if the last analyses in the pipeline has be made
 func (m Model) TestEnd(db *sql.DB, machine, sensor, contract string) (bool, error) {
-	machSens, err := getMachineSensorId(db, machine, sensor)
+	machSens, err := GetMachineSensorId(db, machine, sensor)
 	if err != nil {
 		klog.V(2).Infof("error in getMachineSensorId")
 		return false, err
@@ -84,7 +84,7 @@ func (m Model) TestEnd(db *sql.DB, machine, sensor, contract string) (bool, erro
 // Next query the next model based on the current model
 func (m Model) Next(db *sql.DB, machine, sensor, contract string) (Model, error) {
 
-	machSens, err := getMachineSensorId(db, machine, sensor)
+	machSens, err := GetMachineSensorId(db, machine, sensor)
 	if err != nil {
 		return Model{}, err
 	}
@@ -141,8 +141,8 @@ func (m Model) getIdModel(db *sql.DB) (int64, error) {
 	return id, nil
 }
 
-// getMachineSensorId find id of the machine_sensor table to a given machine and sensor
-func getMachineSensorId(db *sql.DB, machine, sensor string) (int64, error) {
+// GetMachineSensorId find id of the machine_sensor table to a given machine and sensor
+func GetMachineSensorId(db *sql.DB, machine, sensor string) (int64, error) {
 	query, err := db.Query("SELECT machine_sensor.id FROM machine_sensor JOIN sensor ON sensor.id = machine_sensor.sensor WHERE transmitted_id = $1 AND machine = $2", sensor, machine)
 	if err != nil {
 		return -1, err
@@ -160,8 +160,8 @@ func getMachineSensorId(db *sql.DB, machine, sensor string) (int64, error) {
 	return id, err
 }
 
-// getContract get the contract of a machine and machineSensor combination
-func getContract(db *sql.DB, machine string, machineSensor int64) (string, error) {
+// GetContract get the contract of a machine and machineSensor combination
+func GetContract(db *sql.DB, machine string, machineSensor int64) (string, error) {
 	klog.V(2).Infof("query after: machine %s and machineSensor %d", machine, machineSensor)
 	qu, err := db.Query("SELECT contract.id FROM contract JOIN machine_contract ON contract.id = machine_contract.contract JOIN machine_sensor ON machine_contract.machine = machine_sensor.machine WHERE machine_contract.machine = $1 AND machine_sensor.id = $2", machine, machineSensor)
 	if err != nil {
