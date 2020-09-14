@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 
 	"k8s.io/klog"
 )
@@ -116,7 +117,7 @@ func (m Model) Next(db *sql.DB, machine, sensor, contract string) (Model, error)
 // getIdModel find the id of a model based on the model url and tag
 func (m Model) getIdModel(db *sql.DB) (int64, error) {
 
-	klog.V(2).Infof("Query Parameter in getIdmodel: URL: %s, Tag: %s\n", m.Url, m.Tag)
+	klog.V(2).Infof("Query Parameter in getIdModel: URL: %s, Tag: %s\n", m.Url, m.Tag)
 
 	query, err := db.Query("SELECT id FROM model WHERE url = $1 AND tag = $2", m.Url, m.Tag)
 	if err != nil {
@@ -128,12 +129,20 @@ func (m Model) getIdModel(db *sql.DB) (int64, error) {
 		}
 	}()
 
-	var id int64
+	var id int64 = -1
+	found := false
+
 	for query.Next() {
+		found = true
 		err = query.Scan(&id)
 		if err != nil {
 			klog.Errorf("cannot scan err: %s\n", err)
+			return -1, err
 		}
+	}
+
+	if !found {
+		return -1, fmt.Errorf("no result found")
 	}
 
 	klog.V(2).Infof("id is: %d\n", id)
