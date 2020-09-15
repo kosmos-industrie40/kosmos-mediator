@@ -13,8 +13,8 @@ import (
 	mqttClient "gitlab.inovex.de/proj-kosmos/intern-mqtt-db/mqtt"
 )
 
-var topic string = "kosmos/machine-data/+/sensor/+/update"                       // mqtt topic
-var regex string = "kosmos/machine-data/[a-z0-9A-Z]+/sensor/[a-z0-9A-Z]+/update" // regex
+var topic string = "kosmos/machine-data/+/sensor/+/update"           // mqtt topic
+var regex string = "kosmos/machine-data/[^/,]+/sensor/[^/,]+/update" // regex
 
 type SensorUpdate struct {
 	db       *sql.DB
