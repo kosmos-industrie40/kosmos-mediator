@@ -1,4 +1,4 @@
-image: golang:1.14-buster
+image: "${HARBOR_PROD}/cache/library/golang:1.14-buster"
 variables:
         GO111MODULE: "on"
 
