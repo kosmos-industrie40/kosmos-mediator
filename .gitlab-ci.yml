@@ -1,4 +1,4 @@
-image: golang:1.14-buster
+image: "${HARBOR_PROD}/cache/library/golang:1.14-buster"
 variables:
         GO111MODULE: "on"
 
@@ -54,7 +54,7 @@ container_build:
         tags:
                 - shared
         before_script:
-                - echo $CI_DOCKER_CONFIG > /kaniko/.docker/config.json
+                - echo $HARBOR_PROD_PUSH_ANALYSE_PLATFORM_KOSMOS > /kaniko/.docker/config.json
         cache: {}
         script: |
                 if [ -z $CI_REGISTRY ] || [ -z $CI_REGISTRY_IMAGE ]; then
