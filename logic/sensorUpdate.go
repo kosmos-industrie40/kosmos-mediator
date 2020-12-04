@@ -40,11 +40,25 @@ func InitSensorUpdate(db *sql.DB, mq *mqttClient.MqttWrapper, sendChan chan<- mo
 func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 	klog.Infof("Rec SensorHandler: TOPIC: %s \n", msg.Topic())
 
+	var sensorBodyData models.SensorBodyUpdate
 	var sensorData models.SensorUpdate
 
-	if err := json.Unmarshal(msg.Payload(), &sensorData); err != nil {
-		klog.Errorf("Couldn't unmarshal received message payload: %s \n", err)
-		return
+	if err := json.Unmarshal(msg.Payload(), &sensorBodyData); err != nil {
+		klog.Errorf("Couldn't unmarshal received message payload to SensorBodyUpdate: %s \n", err)
+	}
+
+	if sensorBodyData.Body.Timestamp == "" {
+		if err := json.Unmarshal(msg.Payload(), &sensorData); err != nil {
+			klog.Errorf("Couldn't unmarshal received message payload: %s \n", err)
+			return
+		}
+
+		sensorBodyData.Body.Columns = sensorData.Columns
+		sensorBodyData.Body.Data = sensorData.Data
+		sensorBodyData.Body.Meta = sensorData.Meta
+		sensorBodyData.Schema = sensorData.Schema
+		sensorBodyData.Signature = sensorData.Signature
+
 	}
 
 	if !su.regex.MatchString(msg.Topic()) {
@@ -56,9 +70,15 @@ func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 	machineID := topicSliced[2]
 	sensorID := topicSliced[4]
 
-	err := sensorData.Insert(su.db, machineID, sensorID)
+	err := sensorBodyData.Insert(su.db, machineID, sensorID)
 	if err != nil {
 		klog.Errorf("could not insert sensor data into db: %s\n", err)
+		return
+	}
+
+	data, err := json.Marshal(sensorBodyData)
+	if err != nil {
+		klog.Errorf("cannoot marshal sensorBodyData")
 		return
 	}
 
@@ -67,7 +87,7 @@ func (su SensorUpdate) sensorHandler(client MQTT.Client, msg MQTT.Message) {
 		Sensor:       sensorID,
 		LastAnalyses: "",
 		Contract:     "",
-		Message:      msg.Payload(),
+		Message:      data,
 		MessageType:  models.Update,
 	}
 
