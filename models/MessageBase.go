@@ -1,6 +1,6 @@
 package models
 
-// MessageTyp is an enum with the values Analyses = 1 and SensorUpdate = 2
+// MessageType is an enum with the values Analyses = 1 and SensorUpdate = 2
 type MessageType int
 
 // can be used by the enumeration above

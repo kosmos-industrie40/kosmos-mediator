@@ -81,11 +81,13 @@ func Mediator(db *sql.DB, mq mqttClient.MqttWrapper, sendChan <-chan models.Mess
 		}
 
 		msg := models.SendMsg{
-			Contract: base.Contract,
-			Type:     typ,
-			Payload:  oldMsg,
-			Machine:  base.Machine,
-			Sensor:   base.Sensor,
+			Body: models.SendBody{
+				Contract: base.Contract,
+				Type:     typ,
+				Payload:  oldMsg,
+				Machine:  base.Machine,
+				Sensor:   base.Sensor,
+			},
 		}
 
 		bytes, err := json.Marshal(msg)
