@@ -16,7 +16,7 @@ type SensorBodyUpdate struct {
 		Timestamp string      `json:"timestamp"`
 		Columns   interface{} `json:"columns"`
 		Data      interface{} `json:"data"`
-		Meta      interface{} `json:"meta"`
+		Meta      interface{} `json:"meta,omitempty"`
 	} `json:"body"`
 	Signature string `json:"signature"`
 }
