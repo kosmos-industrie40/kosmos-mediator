@@ -32,16 +32,13 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Create config.json file for docker
-        run: |
-          echo $HARBOR_PROD_PUSH_ANALYSE_PLATFORM_KOSMOS > /kaniko/.docker/config.json
-
       - name: Build docker container
         uses: addnab/docker-run-action@v3
         with:
           registry: gcr.io
           image: kaniko-project/executor:debug
           run: |
+            echo $HARBOR_PROD_PUSH_ANALYSE_PLATFORM_KOSMOS > /kaniko/.docker/config.json
             if [ -z $CI_REGISTRY ] || [ -z $CI_REGISTRY_IMAGE ]; then
                     echo "missing parameters please add CI_REGISTRY and/or CI_REGISTRY_IMAGE"
                     exit 1
