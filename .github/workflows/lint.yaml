@@ -1,0 +1,26 @@
+name: Lint
+on: push
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          export GOLANGCI_VERSION="1.30.0"
+          export DEBIAN_FRONTEND="noninteractive"
+          curl -sLO "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_VERSION}/golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+          tar xfz "golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+          mv "golangci-lint-${GOLANGCI_VERSION}-linux-amd64/golangci-lint" /usr/local/bin
+          rm -rf "golangci-lint-${GOLANGCI_VERSION}-linux-amd64" "golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+          unset GOLANGCI_VERSION
+          apt-get update
+          apt install -y yamllint
+      - name: Run linter
+        run: |
+          make lint
