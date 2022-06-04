@@ -19,6 +19,9 @@ jobs:
       - name: Run build
         run: |
           make build
+
+      - name: Save kafka translator
+        uses: actions/upload-artifact@v3
         with:
           name: mqtt-kafka-translator
           path: mqtt-kafka-translator
