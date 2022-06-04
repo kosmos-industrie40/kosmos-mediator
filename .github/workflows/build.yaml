@@ -1,9 +1,5 @@
 name: Build
-on:
-  workflow_run:
-    workflows: ["Lint and test"]
-    types:
-      - completed
+on: push
 
 jobs:
   build:
