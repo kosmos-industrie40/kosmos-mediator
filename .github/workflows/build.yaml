@@ -36,7 +36,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           registry: gcr.io
-          image: kaniko-project/executor:debug
+          image: gcr.io/kaniko-project/executor:debug
           run: |
             echo $HARBOR_PROD_PUSH_ANALYSE_PLATFORM_KOSMOS > /kaniko/.docker/config.json
             if [ -z $CI_REGISTRY ] || [ -z $CI_REGISTRY_IMAGE ]; then
