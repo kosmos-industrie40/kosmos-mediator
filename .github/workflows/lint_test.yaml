@@ -1,4 +1,4 @@
-name: Lint
+name: Lint and test
 on: push
 
 jobs:
@@ -19,8 +19,30 @@ jobs:
           mv "golangci-lint-${GOLANGCI_VERSION}-linux-amd64/golangci-lint" /usr/local/bin
           rm -rf "golangci-lint-${GOLANGCI_VERSION}-linux-amd64" "golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
           unset GOLANGCI_VERSION
-          apt-get update
-          apt install -y yamllint
+      - name: Install linter
+        run: |
+          sudo apt update
+          sudo apt install -y yamllint
       - name: Run linter
         run: |
           make lint
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v2
+
+      - name: Run test
+        run: |
+          go get -u github.com/jstemmer/go-junit-report
+          go test ./... -coverprofile unit-test.out -race --tags unit | go-junit-report > report.xml
+
+      - name: Upload JUnit report
+        uses: actions/upload-artifact@v3
+        with:
+          name: report
+          path: report.xml
+          retention-days: 1
