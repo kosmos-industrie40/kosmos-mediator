@@ -4,7 +4,7 @@ on: push
 jobs:
   yamllint:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - name: Checkout repository code
@@ -29,13 +29,19 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v2
 
-      - name: Run test
+      - name: Install go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.14'
+          check-latest: true
+
+      - name: Run unit tests
         run: |
           go get -u github.com/jstemmer/go-junit-report
           go test ./... -coverprofile unit-test.out -race --tags unit | go-junit-report > report.xml
