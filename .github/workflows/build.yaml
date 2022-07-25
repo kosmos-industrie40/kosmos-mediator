@@ -13,7 +13,7 @@ jobs:
       - name: Install go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.14'
+          go-version: "1.14"
           check-latest: true
 
       - name: Run build
@@ -32,26 +32,16 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Build docker container
-        uses: addnab/docker-run-action@v3
+      - name: Checkout repository code
+        uses: actions/checkout@v3
         with:
-          registry: gcr.io
-          image: gcr.io/kaniko-project/executor:debug
-          run: |
-            echo $HARBOR_PROD_PUSH_ANALYSE_PLATFORM_KOSMOS > /kaniko/.docker/config.json
-            #if [ -z $CI_REGISTRY ] || [ -z $CI_REGISTRY_IMAGE ]; then
-            #        echo "missing parameters please add CI_REGISTRY and/or CI_REGISTRY_IMAGE"
-            #        exit 1
-            #fi
-
-            if [ -z $CI_COMMIT_TAG ]; then
-                    version=$CI_COMMIT_SHA
-            else
-                    version=$CI_COMMIT_TAG
-            fi
-
-            /kaniko/executor \
-                    --no-push \
-                    --context $CI_PROJECT_DIR \
-                    --dockerfile $CI_PROJECT_DIR/Dockerfile \
-                    --destination $CI_REGISTRY/$CI_REGISTRY_IMAGE:$version
+          submodules: recursive
+      - name: Build an App Image
+        run: |
+          docker run \
+            -v $(pwd):/$GITHUB_WORKSPACE \
+            gcr.io/kaniko-project/executor:latest \
+              --no-push \
+              --context $GITHUB_WORKSPACE \
+              --dockerfile $GITHUB_WORKSPACE/Dockerfile \
+              --destination $GITHUB_WORKSPACE/intern-mqtt-db:latest
