@@ -1,0 +1,54 @@
+name: Lint and test
+on: push
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          export GOLANGCI_VERSION="1.30.0"
+          export DEBIAN_FRONTEND="noninteractive"
+          curl -sLO "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_VERSION}/golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+          tar xfz "golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+          mv "golangci-lint-${GOLANGCI_VERSION}-linux-amd64/golangci-lint" /usr/local/bin
+          rm -rf "golangci-lint-${GOLANGCI_VERSION}-linux-amd64" "golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+          unset GOLANGCI_VERSION
+      - name: Install linter
+        run: |
+          sudo apt update
+          sudo apt install -y yamllint
+      - name: Run linter
+        run: |
+          make lint
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v3
+
+      - name: Install go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.14'
+          check-latest: true
+
+      - name: Run unit tests
+        run: |
+          go get -u github.com/jstemmer/go-junit-report
+          go test ./... -coverprofile unit-test.out -race --tags unit | go-junit-report > report.xml
+
+      - name: Upload JUnit report
+        uses: actions/upload-artifact@v3
+        with:
+          name: report
+          path: report.xml
+          retention-days: 1

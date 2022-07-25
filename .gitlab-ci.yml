@@ -1,0 +1,79 @@
+image: "${HARBOR_PROD}/cache/library/golang:1.14-buster"
+variables:
+        GO111MODULE: "on"
+
+stages:
+        - lint
+        - test
+        - build
+        - container
+
+lint:
+        stage: lint
+        tags:
+                - shared
+        before_script:
+                - export GOLANGCI_VERSION="1.30.0"
+                - export DEBIAN_FRONTEND="noninteractive"
+                - curl -sLO "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_VERSION}/golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+                - tar xfz "golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+                - mv "golangci-lint-${GOLANGCI_VERSION}-linux-amd64/golangci-lint" /usr/local/bin
+                - rm -rf "golangci-lint-${GOLANGCI_VERSION}-linux-amd64" "golangci-lint-${GOLANGCI_VERSION}-linux-amd64.tar.gz"
+                - unset GOLANGCI_VERSION
+                - apt-get update
+                - apt install -y yamllint
+        script:
+                - make lint
+
+unit_test:
+        stage: test
+        tags:
+                - shared
+        script:
+                - go get -u github.com/jstemmer/go-junit-report
+                - go test ./... -coverprofile unit-test.out -race --tags unit | go-junit-report > report.xml
+        artifacts:
+                reports:
+                        junit: report.xml
+                expire_in: 1 day
+
+build:
+        stage: build
+        tags:
+                - shared
+        script: make build
+        artifacts:
+                paths:
+                        - mqtt-kafka-translator
+
+container_build:
+        stage: container
+        image:
+                name: gcr.io/kaniko-project/executor:debug
+                entrypoint: [""]
+        tags:
+                - shared
+        before_script:
+                - echo $HARBOR_PROD_PUSH_ANALYSE_PLATFORM_KOSMOS > /kaniko/.docker/config.json
+        cache: {}
+        script: |
+                if [ -z $CI_REGISTRY ] || [ -z $CI_REGISTRY_IMAGE ]; then
+                        echo "missing parameters please add CI_REGISTRY and/or CI_REGISTRY_IMAGE"
+                        exit 1
+                fi
+
+                if [ -z $CI_COMMIT_TAG ]; then
+                        version=$CI_COMMIT_SHA
+                else
+                        version=$CI_COMMIT_TAG
+                fi
+                #/kaniko/executor \
+                #     --context $CI_PROJECT_DIR \
+                #        --dockerfile $CI_PROJECT_DIR/Dockerfile \
+                #        --destination $CI_REGISTRY/$CI_REGISTRY_IMAGE:$version \
+                #        --cache=true # Remove to disable caching
+                /kaniko/executor \
+                --no-push \
+                --context $CI_PROJECT_DIR \
+                --dockerfile $CI_PROJECT_DIR/Dockerfile \
+                #--destination $CI_REGISTRY/$CI_REGISTRY_IMAGE:$version

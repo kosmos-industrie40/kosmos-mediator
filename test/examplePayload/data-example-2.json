@@ -1,0 +1,49 @@
+{
+  "$schema": "file:data-formal.json",
+  "body": {
+    "timestamp": "2020-08-15T15:33:44.897Z",
+    "columns": [
+      {
+        "name": "value",
+        "type": "number",
+        "meta": {
+          "unit": "required etc 'm'"
+        }
+      },
+      {
+        "name": "timestamp",
+        "type": "rfctime",
+        "meta": {
+          "unit": ""
+        }
+      }
+    ],
+    "data": [
+      [
+        "15",
+        "4",
+        "10",
+        "30"
+      ],
+      [
+        "2020-10-01T10:29:55.986+01:00"
+      ]
+    ],
+    "meta": [
+      {
+        "name": "location",
+        "description": "defines the location where the metric is created",
+        "type": "string",
+        "value": "hall 1"
+      }
+    ]
+  },
+  "signature": {
+    "signature": "TestSignature",
+    "meta": {
+      "algorithm": "TestAlgo",
+      "date": "2020-08-15T15:47:55.789Z",
+      "serialNumber": "72-4E-15-2D-3F-68-A9-9C-4F-3A-80-82-A2-9D-D2-FD-56-DA-7D-B1"
+    }
+  }
+}

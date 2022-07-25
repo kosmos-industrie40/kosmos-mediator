@@ -1,0 +1,5 @@
+*.yaml
+*.sql
+test/*
+*.md
+*_test.go
